@@ -18,7 +18,8 @@ Current version overwrites any conflicting mod files by default.
 ----------
 IMPORTANT:
 ----------
-Only works if 7-Zip is installed﻿. https://www.7-zip.org/download.html
+Works only with Watch Dogs 2 Patch3.dat and Patch3.fat files. 
+Needs 7-Zip installed﻿. https://www.7-zip.org/download.html
 Requires official WD2 Patch Tools﻿ by Me1ton﻿. https://www.nexusmods.com/watchdogs2/mods/28
 Leaves temporary folders after running (Temp and Patch folders). You can delete them after usage. 
 
