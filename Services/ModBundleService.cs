@@ -8,13 +8,14 @@ namespace WD2ModBundler.Services
 {
     public class ModBundleService
     {
+        private Action<string> _log;
         /// <summary>
         /// Combines multiple mod archives into a single patch bundle.
         /// </summary>
         /// <param name="ModArchivePath">Folder containing mod archives (.zip, .7z, etc.)</param>
-        /// <param name="log">Delegate to log messages to UI</param>
+        /// <param name="mbslog">Delegate to mbslog messages to UI</param>
         /// <param name="progress">Delegate to report progress (0-100%) to UI</param>
-        public void CombineMods(string ModArchivePath, Action<string> log, Action<int> progress = null)
+        public void CombineMods(string ModArchivePath, Action<string> mbslog, Action<int> progress = null)
         {
             try
             {
@@ -50,12 +51,12 @@ namespace WD2ModBundler.Services
                     // Find 7-Zip executable
                     string sevenZipPath = ArchiveHelper.Find7Zip();
 
-                    log?.Invoke($"Extracting {ModArchive}...");
+                    mbslog?.Invoke($"Extracting {ModArchive}...");
 
                     // Run 7-Zip to extract archive to the folder
                     ProcessHelper.RunProcess(sevenZipPath, $"x \"{ModArchive}\" -o\"{extractPath}\" -y");
 
-                    log?.Invoke($"Finished extracting {ModArchive}");
+                    mbslog?.Invoke($"Finished extracting {ModArchive}");
 
                     // Update progress
                     currentStep++;
@@ -79,7 +80,7 @@ namespace WD2ModBundler.Services
 
                 // Path to WD2Extract.exe
                 string wd2Extract = PatchToolsHelper.GetExtractExePath();
-                log?.Invoke("All mods extracted. Running WD2Extract...");
+                mbslog?.Invoke("All mods extracted. Running WD2Extract...");
 
                 // -----------------------------
                 //  Run WD2Extract on each mod folder
@@ -90,7 +91,7 @@ namespace WD2ModBundler.Services
                     string[] fatFiles = Directory.GetFiles(modFolder, "patch3.fat", SearchOption.AllDirectories);
 
                     if (fatFiles.Length == 0)
-                        throw new FileNotFoundException($"patch3.fat not found in {modFolder}");
+                        throw new FileNotFoundException($"patch3.fat not found in {modFolder}. Mod archives must only have Patch3.dat and Patch3.fat.");
 
                     string modPatch3Fat = fatFiles[0];
 
@@ -101,10 +102,10 @@ namespace WD2ModBundler.Services
                     currentStep++;
                     progress?.Invoke((int)((double)currentStep / totalSteps * 100));
 
-                    log?.Invoke($"Processed patch3.dat from {modFolder}");
+                    mbslog?.Invoke($"Processed patch3.dat from {modFolder}");
                 }
 
-                log?.Invoke("All patch3.dat extracted. Running WD2Pack...");
+                mbslog?.Invoke("All patch3.dat extracted. Running WD2Pack...");
 
                 // -----------------------------
                 //  Pack final combined patch
@@ -130,9 +131,9 @@ namespace WD2ModBundler.Services
                 progress?.Invoke((int)((double)currentStep / totalSteps * 100));
 
                 // -----------------------------
-                //  Log completion
+                //  _log completion
                 // -----------------------------
-                log?.Invoke("All mods combined successfully, check MyModsBundle folder!");
+                mbslog?.Invoke("All mods combined successfully, check MyModsBundle folder!");
                 MessageBox.Show("Mods combined to MyModsBundle folder!", "Success",
                     MessageBoxButton.OK, MessageBoxImage.Information);
             }

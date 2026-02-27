@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.VisualBasic.Logging;
 using Microsoft.Win32; // For OpenFileDialog
 using WD2ModBundler.Helpers;
 using WD2ModBundler.Services;
@@ -11,6 +12,8 @@ namespace WD2ModBundler
     public partial class MainWindow : Window
     {
         private MusicHelper _musicHelper;
+        private Action<string> _log;
+
 
         //Method for MainWindow.Loaded event
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -23,16 +26,25 @@ namespace WD2ModBundler
         {
             InitializeComponent();
 
+            _log = message =>
+            {
+                // Dispatcher ensures the UI is ready
+                Application.Current.Dispatcher.BeginInvoke(() =>
+                {
+                    Log(message);
+                });
+            };
+
             try
             {
                 // Embedded WAV resource path (set Build Action = Embedded Resource)
                 string wavResource = "WD2ModBundler.Assets.startup.wav";
-                Log($"Loading WAV music from: {wavResource}");
+                _log($"Loading WAV music from: {wavResource}");
 
-                // Pass Log so MusicHelper can report its events
-                _musicHelper = new MusicHelper(wavResource, Log);
+                // Pass _log so MusicHelper can report its events
+                _musicHelper = new MusicHelper(wavResource, _log);
 
-                Log("MusicHelper initialized successfully!");
+                _log("MusicHelper initialized successfully!");
 
                 // ASCII splash
                 string resourcePath = "/WD2ModBundler;component/Assets/logo.png";
@@ -45,7 +57,7 @@ namespace WD2ModBundler
             }
             catch (Exception ex)
             {
-                Log($"Error in MainWindow constructor: {ex.Message}");
+                _log($"Error in MainWindow constructor: {ex.Message}");
             }
         }
 
@@ -123,7 +135,7 @@ namespace WD2ModBundler
             if (_musicHelper != null)
                 _musicHelper.Play();
             else
-                Log("MusicHelper is null! Cannot play.");
+                _log("MusicHelper is null! Cannot play.");
         }
 
         private void StopMusic_Click(object sender, RoutedEventArgs e)
@@ -140,13 +152,14 @@ namespace WD2ModBundler
             try
             {
                 string modFolderPath = ModFolderHelper.GetModFolderPath();
-                ModBundleService service = new ModBundleService();
+                var service = new ModBundleService();
 
                 await Task.Run(() =>
                 {
-                    service.CombineMods(modFolderPath,
-                        message => Dispatcher.Invoke(() => Log(message)),
-                        percent => Dispatcher.Invoke(() => ProgressBar.Value = percent));
+                    service.CombineMods(
+                        modFolderPath,
+                        message => Dispatcher.BeginInvoke(() => _log(message)),
+                        percent => Dispatcher.BeginInvoke(() => ProgressBar.Value = percent));
                 });
             }
             catch (Exception ex)
