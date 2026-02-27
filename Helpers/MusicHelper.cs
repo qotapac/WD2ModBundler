@@ -14,10 +14,12 @@ namespace WD2ModBundler.Helpers
         private Stream _stream; // Keep alive the music stream
         private Action<string> _log;
 
-        public MusicHelper(string embeddedResourceName, Action<string> log = null)
+        
+
+        public MusicHelper(string embeddedResourceName, Action<string> mhlog = null)
         {
-            _log = log ?? (_ => { }); // Safe no-op
-// Dispatcher bellow wraps the provided log to always run on the UI thread.
+//            _log = mhlog ?? (_ => { }); - Safe no-op is no longer needed because we have a Dispatcher wrapper bellow, it was used to fix NullReffException
+// Dispatcher bellow wraps the provided mhlog to always run on the UI thread.
 // This is needed because:
 //    MainWindow constructor starts
 //   |
@@ -36,7 +38,7 @@ namespace WD2ModBundler.Helpers
 //   | --> Constructor finishes, WPF finishes first render
 //         |
 //         | --> Dispatcher executes queued lambda
-//               log?.Invoke("WAV loaded") runs on UI thread
+//               mhlog?.Invoke("WAV loaded") runs on UI thread
 //               TextBox shows the message
 
             _log = message =>
@@ -44,7 +46,7 @@ namespace WD2ModBundler.Helpers
                 // Dispatcher ensures the UI is ready
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
-                    log?.Invoke(message);
+                    mhlog?.Invoke(message);
                 });
             };
 
@@ -60,7 +62,7 @@ namespace WD2ModBundler.Helpers
                 }
 
                 _player = new SoundPlayer(_stream);
-                _player.Load(); // loads WAV into memory SYNCHRONUSLY!!! this a reason why we delay the log print until UI render pass finishes
+                _player.Load(); // loads WAV into memory SYNCHRONUSLY!!! this a reason why we delay the mhlog print until UI render pass finishes
                 _log($"WAV music loaded successfully from resource: {embeddedResourceName}");
             }
             catch (Exception ex)
