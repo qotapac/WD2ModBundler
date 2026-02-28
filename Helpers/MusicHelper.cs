@@ -18,37 +18,8 @@ namespace WD2ModBundler.Helpers
 
         public MusicHelper(string embeddedResourceName, Action<string> mhlog = null)
         {
-//            _log = mhlog ?? (_ => { }); - Safe no-op is no longer needed because we have a Dispatcher wrapper bellow, it was used to fix NullReffException
-// Dispatcher bellow wraps the provided mhlog to always run on the UI thread.
-// This is needed because:
-//    MainWindow constructor starts
-//   |
-//   | --> InitializeComponent()
-//   | (TextBox created but not fully rendered yet)
-//   |
-//   | --> MusicHelper constructor
-//         |
-//         | --> _player.Load()(blocking, synchronous)
-//         |
-//         | --> _log("WAV loaded") called
-//               |
-//               | --> Dispatcher.BeginInvoke queues action
-//               | (does NOT run yet)
-//   |
-//   | --> Constructor finishes, WPF finishes first render
-//         |
-//         | --> Dispatcher executes queued lambda
-//               mhlog?.Invoke("WAV loaded") runs on UI thread
-//               TextBox shows the message
+           _log = mhlog ?? (_ => { }); //- Safe no-op to prevent NullReffException
 
-            _log = message =>
-            {
-                // Dispatcher ensures the UI is ready
-                Application.Current.Dispatcher.BeginInvoke(() =>
-                {
-                    mhlog?.Invoke(message);
-                });
-            };
 
             try
             {

@@ -26,9 +26,30 @@ namespace WD2ModBundler
         {
             InitializeComponent();
 
+            // Dispatcher bellow is needed because:
+            //    MainWindow constructor starts
+            //   |
+            //   | --> InitializeComponent()
+            //   | (TextBox created but not fully rendered yet)
+            //   |
+            //   | --> MusicHelper constructor
+            //         |
+            //         | --> _player.Load()(blocking, synchronous)
+            //         |
+            //         | --> _log("WAV loaded") called
+            //               |
+            //               | --> Dispatcher.BeginInvoke queues action
+            //               | (does NOT run yet)
+            //   |
+            //   | --> Constructor finishes, WPF finishes first render
+            //         |
+            //         | --> Dispatcher executes queued lambda
+            //               mhlog?.Invoke("WAV loaded") runs on UI thread
+            //               TextBox shows the message
+
+
             _log = message =>
             {
-                // Dispatcher ensures the UI is ready
                 Application.Current.Dispatcher.BeginInvoke(() =>
                 {
                     Log(message);
