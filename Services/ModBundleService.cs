@@ -8,7 +8,6 @@ namespace WD2ModBundler.Services
 {
     public class ModBundleService
     {
-        private Action<string> _log;
         /// <summary>
         /// Combines multiple mod archives into a single patch bundle.
         /// </summary>
