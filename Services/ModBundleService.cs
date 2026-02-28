@@ -133,14 +133,10 @@ namespace WD2ModBundler.Services
                 //  _log completion
                 // -----------------------------
                 mbslog?.Invoke("All mods combined successfully, check MyModsBundle folder!");
-                MessageBox.Show("Mods combined to MyModsBundle folder!", "Success",
-                    MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                // Display any errors to the user
-                MessageBox.Show("Error: " + ex.Message, "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                throw; //Method caller will handle error display instead
             }
         }
     }

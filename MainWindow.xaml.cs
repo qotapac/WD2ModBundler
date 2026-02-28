@@ -182,10 +182,17 @@ namespace WD2ModBundler
                         message => Dispatcher.BeginInvoke(() => _log(message)),
                         percent => Dispatcher.BeginInvoke(() => ProgressBar.Value = percent));
                 });
+
+                //Inform about CombineMods method finishing successfully. Executed on UI thread, no need to keep it in the ModBundleService.cs
+                MessageBox.Show("Mods combined to MyModsBundle folder!", "Success",
+                MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error: " + ex.Message, 
+                    "Error", 
+                    MessageBoxButton.OK, 
+                    MessageBoxImage.Error);
             }
         }
 
